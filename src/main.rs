@@ -50,8 +50,8 @@ fn handle_connection(mut stream: TcpStream) {
                 Content-Type: text/plain\r\n\
                 Content-Length: {}\r\n\r\n\
                 {}",
-                user_agent.len(),
-                user_agent
+                user_agent.len() - 12,
+                &user_agent[12..]
             )
         }
         _ if path.starts_with("/echo/") => {
