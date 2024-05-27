@@ -32,18 +32,17 @@ fn handle_connection(mut stream: TcpStream) {
 
     let start_line = http_request.first().unwrap();
     let path = start_line.split_whitespace().nth(1).unwrap();
-    let user_agent = http_request
-        .iter()
-        .find(|line| line.starts_with("User-Agent"))
-        .unwrap();
 
     let response: String;
 
     response = match path {
-        "/" => {
-            "HTTP/1.1 200 OK\r\n\r\n".to_string()
-        }
+        "/" => "HTTP/1.1 200 OK\r\n\r\n".to_string(),
         "/user-agent" => {
+            let user_agent = http_request
+                .iter()
+                .find(|line| line.starts_with("User-Agent"))
+                .unwrap();
+
             format!(
                 "\
                 HTTP/1.1 200 OK\r\n\
@@ -65,9 +64,7 @@ fn handle_connection(mut stream: TcpStream) {
                 &path[6..]
             )
         }
-        _ => {
-            "HTTP/1.1 404 Not Found\r\n\r\n".to_string()
-        }
+        _ => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
     };
 
     stream.write_all(response.as_bytes()).unwrap();
