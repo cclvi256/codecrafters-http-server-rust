@@ -38,7 +38,7 @@ fn handle_connection(mut stream: TcpStream) {
     } else if path.starts_with("/echo/") {
         response = format!(
             "\
-            HTTP/1.1 200 OK\r\n\r\n\
+            HTTP/1.1 200 OK\r\n\
             Content-Type: text/plain\r\n\
             Content-Length: {0}\r\n\r\n\
             {1}",
