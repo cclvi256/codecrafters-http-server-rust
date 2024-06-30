@@ -81,7 +81,7 @@ fn handle_connection(mut stream: TcpStream) {
                         format!(
                             "\
                             HTTP/1.1 200 OK\r\n\
-                            Content-Type: text/plain\r\n\
+                            Content-Type: application/octet-stream\r\n\
                             Content-Length: {}\r\n\r\n\
                             {}",
                             file_content.len(),
