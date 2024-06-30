@@ -1,4 +1,5 @@
 use std::{
+    fs::File,
     io::{BufRead, BufReader, Write},
     net::{TcpListener, TcpStream},
 };
@@ -63,6 +64,19 @@ fn handle_connection(mut stream: TcpStream) {
                 path.len() - 6,
                 &path[6..]
             )
+        }
+        _ if path.starts_with("/files/") => {
+            let file_name = &path[7..];
+            let file = File::open(file_name);
+
+            match file {
+                Ok(mut file) => {
+                    let contents = std::fs::read_to_string(file_name).unwrap();
+                    contents
+                }
+                Err(_) => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
+            
+            }
         }
         _ => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
     };
