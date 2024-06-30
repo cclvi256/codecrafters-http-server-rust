@@ -54,31 +54,39 @@ fn handle_connection(mut stream: TcpStream) {
                 &user_agent[12..]
             )
         }
-        _ if path.starts_with("/echo/") => {
-            format!(
-                "\
-                HTTP/1.1 200 OK\r\n\
-                Content-Type: text/plain\r\n\
-                Content-Length: {}\r\n\r\n\
-                {}",
-                path.len() - 6,
-                &path[6..]
-            )
-        } 
-        _ if path.starts_with("/files/") => {
-            let file_name = &path[7..];
-            let file = File::open(file_name);
+        _ => {
+            if path.starts_with("/echo/") {
+                format!(
+                    "\
+                    HTTP/1.1 200 OK\r\n\
+                    Content-Type: text/plain\r\n\
+                    Content-Length: {}\r\n\r\n\
+                    {}",
+                    path.len() - 6,
+                    &path[6..]
+                )
+            } else if path.starts_with("/files/") {
+                let file_path = &path[7..];
+                let file_content = fs::read_to_string(file_path);
 
-            match file {
-                Ok(mut file) => {
-                    let contents = fs::read_to_string(file_name).unwrap();
-                    contents
+                match file_content {
+                    Ok(content) => {
+                        format!(
+                            "\
+                            HTTP/1.1 200 OK\r\n\
+                            Content-Type: text/plain\r\n\
+                            Content-Length: {}\r\n\r\n\
+                            {}",
+                            content.len(),
+                            content
+                        )
+                    }
+                    Err(_) => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
                 }
-                Err(_) => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
-
+            } else {
+                "HTTP/1.1 404 Not Found\r\n\r\n".to_string()
             }
         }
-        _ => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
     };
 
     stream.write_all(response.as_bytes()).unwrap();
