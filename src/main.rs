@@ -66,7 +66,7 @@ fn handle_connection(mut stream: TcpStream) {
             )
         }
         _ if path.starts_with("/files/") => {
-            let file_name = &path[7..];
+            let file_name = &path[6..];
             let content = fs::read_to_string(file_name);
 
             match content {
