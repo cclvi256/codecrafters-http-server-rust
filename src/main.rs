@@ -1,6 +1,7 @@
 use std::{
+    env,
     fs::{self, File},
-    io::{BufRead, BufReader, Write},
+    io::{BufRead, BufReader, Read, Write},
     net::{TcpListener, TcpStream},
 };
 
@@ -66,22 +67,30 @@ fn handle_connection(mut stream: TcpStream) {
                     &path[6..]
                 )
             } else if path.starts_with("/files/") {
-                let file_path = &path[6..];
-                let file_content = fs::read_to_string(file_path);
+                let file_path = &path[7..];
+                let cmd_line_args: Vec<String> = env::args().collect();
+                let base_dir = cmd_line_args.get(2).unwrap();
 
-                match file_content {
-                    Ok(content) => {
+                let file = File::open(format!("{}{}", base_dir, file_path));
+
+                match file {
+                    Ok(_) => {
+                        let file_content = fs::read_to_string(format!("{}{}", base_dir, file_path))
+                            .expect("Unable to read file");
+
                         format!(
                             "\
                             HTTP/1.1 200 OK\r\n\
-                            Content-Type: application/octet-stream\r\n\
+                            Content-Type: text/plain\r\n\
                             Content-Length: {}\r\n\r\n\
                             {}",
-                            content.len(),
-                            content
+                            file_content.len(),
+                            file_content
                         )
+                    },
+                    Err(_) => {
+                        "HTTP/1.1 404 Not Found\r\n\r\n".to_string()
                     }
-                    Err(_) => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
                 }
             } else {
                 "HTTP/1.1 404 Not Found\r\n\r\n".to_string()
