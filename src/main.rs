@@ -1,5 +1,5 @@
 use std::{
-    fs::File,
+    fs::{self, File},
     io::{BufRead, BufReader, Write},
     net::{TcpListener, TcpStream},
 };
@@ -67,7 +67,8 @@ fn handle_connection(mut stream: TcpStream) {
         }
         _ if path.starts_with("/files/") => {
             let file_name = &path[7..];
-            let content = std::fs::read_to_string(file_name);
+            let content = fs::read_to_string(file_name);
+
             match content {
                 Ok(content) => {
                     format!(
