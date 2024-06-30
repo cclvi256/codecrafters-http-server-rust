@@ -67,15 +67,20 @@ fn handle_connection(mut stream: TcpStream) {
         }
         _ if path.starts_with("/files/") => {
             let file_name = &path[7..];
-            let file = File::open(file_name);
-
-            match file {
-                Ok(mut file) => {
-                    let contents = std::fs::read_to_string(file_name).unwrap();
-                    contents
+            let content = std::fs::read_to_string(file_name);
+            match content {
+                Ok(content) => {
+                    format!(
+                        "\
+                        HTTP/1.1 200 OK\r\n\
+                        Content-Type: text/plain\r\n\
+                        Content-Length: {}\r\n\r\n\
+                        {}",
+                        content.len(),
+                        content
+                    )
                 }
                 Err(_) => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
-            
             }
         }
         _ => "HTTP/1.1 404 Not Found\r\n\r\n".to_string(),
