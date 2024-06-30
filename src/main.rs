@@ -66,7 +66,7 @@ fn handle_connection(mut stream: TcpStream) {
                     &path[6..]
                 )
             } else if path.starts_with("/files/") {
-                let file_path = &path[7..];
+                let file_path = &path[6..];
                 let file_content = fs::read_to_string(file_path);
 
                 match file_content {
@@ -74,7 +74,7 @@ fn handle_connection(mut stream: TcpStream) {
                         format!(
                             "\
                             HTTP/1.1 200 OK\r\n\
-                            Content-Type: text/plain\r\n\
+                            Content-Type: application/octet-stream\r\n\
                             Content-Length: {}\r\n\r\n\
                             {}",
                             content.len(),
