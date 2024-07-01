@@ -1,7 +1,11 @@
+pub mod request;
+pub mod file;
+pub mod response;
+
 use std::{
     env,
     fs::{self, File},
-    io::{BufRead, BufReader, Read, Write},
+    io::{BufRead, BufReader, Write},
     net::{TcpListener, TcpStream},
 };
 
@@ -35,15 +39,15 @@ fn handle_connection(mut stream: TcpStream) {
     let start_line = http_request.first().unwrap();
     let path = start_line.split_whitespace().nth(1).unwrap();
 
-    let response: String;
-
-    response = match path {
+    let response = match path {
         "/" => "HTTP/1.1 200 OK\r\n\r\n".to_string(),
         "/user-agent" => {
             let user_agent = http_request
                 .iter()
                 .find(|line| line.starts_with("User-Agent"))
                 .unwrap();
+            
+            let message = user_agent.strip_prefix("User-Agent: ").unwrap();
 
             format!(
                 "\
@@ -51,23 +55,24 @@ fn handle_connection(mut stream: TcpStream) {
                 Content-Type: text/plain\r\n\
                 Content-Length: {}\r\n\r\n\
                 {}",
-                user_agent.len() - 12,
-                &user_agent[12..]
+                message.len(),
+                message
             )
         }
         _ => {
             if path.starts_with("/echo/") {
+                let message = path.strip_prefix("/echo/").unwrap();
                 format!(
                     "\
                     HTTP/1.1 200 OK\r\n\
                     Content-Type: text/plain\r\n\
                     Content-Length: {}\r\n\r\n\
                     {}",
-                    path.len() - 6,
-                    &path[6..]
+                    message.len(),
+                    message
                 )
             } else if path.starts_with("/files/") {
-                let file_path = &path[7..];
+                let file_path = path.strip_prefix("/files/").unwrap();
                 let cmd_line_args: Vec<String> = env::args().collect();
                 let base_dir = cmd_line_args.get(2).unwrap();
 
